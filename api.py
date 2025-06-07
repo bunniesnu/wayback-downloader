@@ -11,7 +11,7 @@ def get_availability(url: str):
         try:
             data = response.json()
         except:
-            return response.text
+            raise Exception(f"Error parsing JSON response: {response.text}")
         entries = data[1:]
         headers = data[0]
         values: list[dict[str, str]] = []
@@ -23,3 +23,11 @@ def get_availability(url: str):
         return values
     else:
         raise Exception(f"Error fetching availability: {response.status_code} - {response.text}")
+
+def download_website(url: str, timestamp: str):
+    full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
+    response = requests.get(full_url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        raise Exception(f"Error downloading website: {response.status_code} - {response.text}")
