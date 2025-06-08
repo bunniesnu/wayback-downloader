@@ -1,5 +1,6 @@
 if __name__ == "__main__":
     from sys import argv
+    from tqdm import tqdm
     import json
     if len(argv) < 3:
         print("Usage: python main.py <url> <output_directory> [<proxy>]")
@@ -22,17 +23,19 @@ if __name__ == "__main__":
         if target["statuscode"] == "200":
             cnt += 1
     print(f"Found {cnt} entries for {url}")
-    for target in data:
-        if target["statuscode"] != "200":
-            continue
-        filename = target["original"].split("?")[0].split(url)[1].lstrip("/")
-        if filename == "":
-            filename = "index.html"
-        file = Path(argv[2]) / target["timestamp"] / filename
-        file.parent.mkdir(parents=True, exist_ok=True)
-        if file.exists():
-            print(f"File {file} already exists, skipping download.")
-            continue
-        download_url = (url + "/" + filename) if filename != "index.html" else url
-        file.write_bytes(download_website(download_url, target["timestamp"], proxy))
-        print(f"Downloaded @ {target['timestamp']} - {download_url}")
+    with tqdm(total=cnt, desc="Downloading files", ncols=100) as pbar:
+        for target in data:
+            if target["statuscode"] != "200":
+                continue
+            filename = target["original"].split("?")[0].split(url)[1].lstrip("/")
+            if filename == "":
+                filename = "index.html"
+            file = Path(argv[2]) / target["timestamp"] / filename
+            file.parent.mkdir(parents=True, exist_ok=True)
+            if file.exists():
+                pbar.update(1)
+                continue
+            download_url = (url + "/" + filename) if filename != "index.html" else url
+            tqdm.write(f"Downloading @ {target['timestamp']} - {download_url}")
+            file.write_bytes(download_website(download_url, target["timestamp"], proxy))
+            pbar.update(1)

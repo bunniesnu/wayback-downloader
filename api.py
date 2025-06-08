@@ -1,6 +1,7 @@
 import requests
 from const import WAYBACK_API_ENDPOINT
 import time
+from tqdm import tqdm
 
 def get_availability(url: str):
     params = {
@@ -40,12 +41,12 @@ def download_website(url: str, timestamp: str, proxy: str | None = None):
             if response.status_code == 200:
                 return response.content
             elif response.status_code == 404:
-                print(f"404 Not Found for {url} at {timestamp}")
+                tqdm.write(f"404 Not Found for {url} at {timestamp}")
                 break
             else:
                 retry += 1
                 if retry >= 3:
-                    print(f"Failed to download {url}: {response.status_code}")
+                    tqdm.write(f"Failed to download {url}: {response.status_code}")
                     break
         except Exception as e:
             retry += 1
