@@ -52,14 +52,33 @@ driver = webdriver.Chrome(options=options)
 
 driver.get(LOCAL_URL)
 
+reload = 0
+
+MAX_RELOADS = 10
+
 try:
     while True:
+        cnt = 0
         for entry in driver.get_log('performance'):
             message = json.loads(entry['message'])['message']
             if message.get('method') == 'Network.responseReceived':
                 resp = message['params']['response']
                 if resp.get('status') == 404:
+                    cnt += 1
                     handle_404(resp['url'])
+        if cnt == 0:
+            if reload >= 3:
+                if reload >= MAX_RELOADS:
+                    print(f"Reloaded {reload} times, stopping.")
+                    break
+                print("Loaded all asssets.")
+                time.sleep(5)
+                reload += 1
+                continue
+            print("Loaded all asssets.")
+            reload += 1
+        else:
+            reload = 0
         time.sleep(1)
 except KeyboardInterrupt:
     print("Monitoring stopped by user.")
