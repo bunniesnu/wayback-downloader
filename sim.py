@@ -20,9 +20,11 @@ proxies = {
 
 def handle_404(url: str):
     endpoint = url.replace(LOCAL_URL, '')
-    print(endpoint)
     path = Path("output") / TIMESTAMP / endpoint.lstrip('/')
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        print(f"File {path} already exists, skipping download.")
+        return
     retry = 0
     while retry < 3:
         try:
@@ -58,6 +60,13 @@ MAX_RELOADS = 10
 
 try:
     while True:
+        try:
+            _ = driver.title
+        except Exception:
+            print("Driver closed, reopening...")
+            driver.quit()
+            driver = webdriver.Chrome(options=options)
+            driver.get(LOCAL_URL)
         cnt = 0
         for entry in driver.get_log('performance'):
             message = json.loads(entry['message'])['message']
