@@ -1,5 +1,6 @@
 import requests
 from const import WAYBACK_API_ENDPOINT
+import time
 
 def get_availability(url: str):
     params = {
@@ -30,8 +31,23 @@ def download_website(url: str, timestamp: str, proxy: str | None = None):
         'https': proxy,
     } if proxy else None
     full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
-    response = requests.get(full_url, proxies=proxies)
-    if response.status_code == 200:
-        return response.content
-    else:
-        raise Exception(f"Error downloading website: {response.status_code} - {response.text}")
+    retry = 0
+    while retry < 3:
+        try:
+            response = requests.get(full_url, proxies=proxies)
+            if response.status_code == 200:
+                return response.content
+            elif response.status_code == 404:
+                print(f"404 Not Found for {url} at {timestamp}")
+                break
+            else:
+                retry += 1
+                if retry >= 3:
+                    print(f"Failed to download {url}: {response.status_code}")
+                    break
+        except Exception as e:
+            retry += 1
+            if retry >= 3:
+                raise e
+        time.sleep(10)
+    raise Exception(f"Error downloading website: {url} at {timestamp}")
