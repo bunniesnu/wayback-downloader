@@ -32,7 +32,7 @@ def handle_404(url: str):
             response = requests.get(download_url, proxies=proxies)
             if response.status_code == 200 or response.status_code == 206:
                 path.write_bytes(response.content)
-                print(f"Downloaded {url} at {TIMESTAMP} to {path}")
+                print(f"Downloaded {endpoint}")
                 break
             elif response.status_code == 404:
                 print(f"404 Not Found for {url} at {TIMESTAMP}")
@@ -57,6 +57,7 @@ driver.get(LOCAL_URL)
 reload = 0
 
 MAX_RELOADS = 10
+WAIT_TIME = 10
 
 try:
     while True:
@@ -81,7 +82,7 @@ try:
                     print(f"Reloaded {reload} times, stopping.")
                     break
                 print("Loaded all asssets.")
-                time.sleep(5)
+                time.sleep(WAIT_TIME)
                 reload += 1
                 continue
             print("Loaded all asssets.")
@@ -90,4 +91,4 @@ try:
             reload = 0
         time.sleep(1)
 except KeyboardInterrupt:
-    print("Monitoring stopped by user.")
+    print("Monitoring stopped by user. The last timestamp is:", TIMESTAMP)
