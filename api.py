@@ -6,7 +6,9 @@ from tqdm import tqdm
 def get_availability(url: str):
     params = {
         "url": f"{url}*",
-        "output": "json"
+        "output": "json",
+        "filter": "statuscode:20*",
+        "collapse": "digest"
     }
     response = requests.get(WAYBACK_API_ENDPOINT, params=params)
     if response.status_code == 200:
@@ -24,6 +26,7 @@ def get_availability(url: str):
             for i, value in enumerate(entry):
                 entry_dict[headers[i]] = value
             values.append(entry_dict)
+        values.sort(key=lambda x: int(x["timestamp"]))
         return values
     else:
         raise Exception(f"Error fetching availability: {response.status_code} - {response.text}")
