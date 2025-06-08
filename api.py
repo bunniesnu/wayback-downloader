@@ -4,7 +4,7 @@ import time
 
 def get_availability(url: str):
     params = {
-        "url": url,
+        "url": f"{url}*",
         "output": "json"
     }
     response = requests.get(WAYBACK_API_ENDPOINT, params=params)
