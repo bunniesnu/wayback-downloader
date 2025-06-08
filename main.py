@@ -16,7 +16,7 @@ if __name__ == "__main__":
     if pre_file.exists():
         data = json.loads(pre_file.read_text())
     else:
-        data = get_availability(url)
+        data = get_availability(url, proxy)
         pre_file.write_text(json.dumps(data, indent=4))
     cnt = len(data)
     print(f"Found {cnt} entries for {url}")

@@ -3,14 +3,18 @@ from const import WAYBACK_API_ENDPOINT
 import time
 from tqdm import tqdm
 
-def get_availability(url: str):
+def get_availability(url: str, proxy: str | None = None):
+    proxies = {
+        'http': proxy,
+        'https': proxy,
+    }
     params = {
         "url": f"{url}*",
         "output": "json",
         "filter": "statuscode:20*",
         "collapse": "digest"
     }
-    response = requests.get(WAYBACK_API_ENDPOINT, params=params)
+    response = requests.get(WAYBACK_API_ENDPOINT, params=params, proxies=proxies)
     if response.status_code == 200:
         try:
             data = response.json()
