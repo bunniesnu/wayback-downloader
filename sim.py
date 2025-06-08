@@ -6,11 +6,17 @@ import requests
 from pathlib import Path
 
 if len(argv) < 4:
-    print("Usage: python sim.py <timestamp> <url> <local_url>")
+    print("Usage: python sim.py <timestamp> <url> <local_url> [<proxy>]")
     exit(1)
 TIMESTAMP = argv[1]
 URL = argv[2]
 LOCAL_URL = argv[3]
+PROXY = argv[4] if len(argv) > 4 else None
+
+proxies = {
+    'http': PROXY,
+    'https': PROXY,
+} if PROXY else None
 
 def handle_404(url: str):
     endpoint = url.replace(LOCAL_URL, '')
@@ -21,7 +27,7 @@ def handle_404(url: str):
     while retry < 3:
         try:
             download_url = f"https://web.archive.org/web/{TIMESTAMP}id_/{URL}{endpoint}"
-            response = requests.get(download_url)
+            response = requests.get(download_url, proxies=proxies)
             if response.status_code == 200 or response.status_code == 206:
                 path.write_bytes(response.content)
                 print(f"Downloaded {url} at {TIMESTAMP} to {path}")

@@ -24,9 +24,13 @@ def get_availability(url: str):
     else:
         raise Exception(f"Error fetching availability: {response.status_code} - {response.text}")
 
-def download_website(url: str, timestamp: str):
+def download_website(url: str, timestamp: str, proxy: str | None = None):
+    proxies = {
+        'http': proxy,
+        'https': proxy,
+    } if proxy else None
     full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
-    response = requests.get(full_url)
+    response = requests.get(full_url, proxies=proxies)
     if response.status_code == 200:
         return response.text
     else:
