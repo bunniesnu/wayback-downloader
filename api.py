@@ -13,6 +13,8 @@ def get_availability(url: str):
             data = response.json()
         except:
             raise Exception(f"Error parsing JSON response: {response.text}")
+        if len(data) < 2:
+            raise Exception(f"No availability data found for {url}")
         entries = data[1:]
         headers = data[0]
         values: list[dict[str, str]] = []
