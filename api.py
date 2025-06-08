@@ -49,5 +49,5 @@ def download_website(url: str, timestamp: str, proxy: str | None = None):
             retry += 1
             if retry >= 3:
                 raise e
-        time.sleep(10)
+        time.sleep(10 * retry)
     raise Exception(f"Error downloading website: {url} at {timestamp}")

@@ -44,7 +44,7 @@ def handle_404(url: str):
             retry += 1
             if retry >= 3:
                 raise e
-        time.sleep(10)
+        time.sleep(10 * retry)
 
 options = webdriver.ChromeOptions() 
 options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
