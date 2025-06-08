@@ -32,6 +32,6 @@ def download_website(url: str, timestamp: str, proxy: str | None = None):
     full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
     response = requests.get(full_url, proxies=proxies)
     if response.status_code == 200:
-        return response.text
+        return response.content
     else:
         raise Exception(f"Error downloading website: {response.status_code} - {response.text}")

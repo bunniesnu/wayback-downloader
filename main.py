@@ -22,4 +22,4 @@ if __name__ == "__main__":
         print(f"Downloading {target['timestamp']} for {url}")
         file = Path(argv[2]) / target["timestamp"] / "index.html"
         file.parent.mkdir(parents=True, exist_ok=True)
-        file.write_text(download_website(url, target["timestamp"], proxy), encoding="utf-8")
+        file.write_bytes(download_website(url, target["timestamp"], proxy))
