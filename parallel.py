@@ -21,7 +21,7 @@ def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, proxy: st
         max_workers = DEFAULT_WORKERS
     to_download = [t for t in data if (not (digest_dir / t["digest"]).exists())]
     print(f"{len(data) - len(to_download)} files already present, {len(to_download)} to download")
-    pbar = tqdm(total=len(to_download), desc="Downloading files")
+    pbar = tqdm(total=len(to_download), desc="Downloading files", ncols=100)
     results: list[tuple[dict[HEADERS_KEY, str], bool]] = []
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -30,7 +30,10 @@ def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, proxy: st
             for t in to_download
         }
         for future in as_completed(future_map):
-            target, did_download = future.result()
+            try:
+                target, did_download = future.result()
+            except:
+                continue
             if did_download:
                 tqdm.write(f"Downloaded {target['digest']}")
                 pbar.update(1)
@@ -39,4 +42,4 @@ def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, proxy: st
             results.append((target, did_download))
 
     pbar.close()
-    return results
+    return results, len(to_download) == len(results), len(to_download) - len(results)

@@ -35,8 +35,12 @@ if __name__ == "__main__":
     timestamps = set(int(target["timestamp"]) for target in data if target["original"].split("://")[1].split("?")[0].rstrip("/") == url)
     print(f"Found {len(timestamps)} unique timestamps for {url}")
     digest_dir = Path(argv[2]) / "digest"
-    download_results = download_all(data, digest_dir=digest_dir, proxy=proxy)
-    print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
+    while True:
+        download_results, downloaded_all, remain_num = download_all(data, digest_dir=digest_dir, proxy=proxy)
+        print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
+        if downloaded_all:
+            break
+        print(f"{remain_num} files not downloaded. Attempting to download again...")
     print("Checking file digests")
     for filename in listdir(digest_dir):
         file_path = digest_dir / filename
