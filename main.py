@@ -6,7 +6,7 @@ if __name__ == "__main__":
         print("Usage: python main.py <url> <output_directory> [<proxy>] [<data_directory>]")
         exit(1)
     from pathlib import Path
-    from api import get_availability, download_website
+    from api import get_availability, download_website, get_files
     from os import listdir
     from digest import cdx_digest
     import requests
@@ -22,7 +22,8 @@ if __name__ == "__main__":
     if url.startswith("http://") or url.startswith("https://"):
         url = url.split("://")[1]
     print(f"Fetching availability for {url}")
-    pre_file = Path(argv[4] if len(argv) > 4 else "data") / "availability.json"
+    data_dir = Path(argv[4] if len(argv) > 4 else "data")
+    pre_file = data_dir / "availability.json"
     if pre_file.exists():
         data = json.loads(pre_file.read_text())
     else:
@@ -61,3 +62,27 @@ if __name__ == "__main__":
         pbar.clear()
         pbar.close()
     print("All file digests are correct.")
+    manifest_dir = Path(argv[2]) / "manifest"
+    with tqdm(total=len(timestamps), desc="Generating manifest", ncols=100) as pbar:
+        list_of_timestamps = sorted(timestamps)
+        for i, timestamp in enumerate(list_of_timestamps):
+            timestamp_file = data_dir / f"{timestamp}.json"
+            tqdm.write(f"Generating manifest for timestamp {timestamp}")
+            if timestamp_file.exists():
+                files = json.loads(timestamp_file.read_text())
+            else:
+                files = get_files(url=url, from_timestamp=str(timestamp), proxy=proxy, to_timestamp=(str(list_of_timestamps[i + 1]) if i < len(timestamps) - 1 else None))
+                timestamp_file.write_text(json.dumps(files, indent=4))
+            manifest_file = manifest_dir / f"{timestamp}.json"
+            manifest_file.parent.mkdir(parents=True, exist_ok=True)
+            manifest_data = {}
+            for file in files:
+                k = file["original"].split(url)[1]
+                v = file["digest"]
+                manifest_data[k] = v
+            manifest_file.write_text(json.dumps(manifest_data, indent=4))
+            pbar.update(1)
+        pbar.clear()
+        pbar.close()
+    print(f"Generated manifest files in {argv[2]}/manifest")
+    print("Process completed successfully.")
