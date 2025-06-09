@@ -59,7 +59,7 @@ def download_website(*, url: str, timestamp: str, proxy: str | None = None, max_
     } if proxy else None
     full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
     retry = 0
-    while retry < max_retries:
+    while retry < max_retries + 1:
         try:
             response = requests.get(full_url, proxies=proxies)
             if response.status_code >= 200 and response.status_code < 210:
