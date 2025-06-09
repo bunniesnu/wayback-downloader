@@ -16,7 +16,7 @@ def _download_target(target: dict[HEADERS_KEY, str], digest_dir: Path, max_retri
     file.write_bytes(download_website(url=download_url, timestamp=target["timestamp"], proxy=proxy, max_retries=max_retries))
     return target, True
 
-def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, max_retries: int, proxy: str | None = None, max_workers: int | None = None):
+def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, max_retries: int, proxy: str | None = None, max_workers: int | None = None, log: bool = False):
     if max_workers is None:
         max_workers = DEFAULT_WORKERS
     num_of_unique_digests = len(set(t["digest"] for t in data))
@@ -39,7 +39,8 @@ def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, max_retri
             except:
                 continue
             if did_download:
-                tqdm.write(f"Downloaded {target['digest']}")
+                if log:
+                    tqdm.write(f"Downloaded {target['digest']}")
                 pbar.update(1)
             else:
                 pbar.update(1)

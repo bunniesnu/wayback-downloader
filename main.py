@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print(f"Found {len(timestamps)} unique timestamps for {url}")
     digest_dir = Path(argv[2]) / "digest"
     while True:
-        download_results, downloaded_all, remain_num = download_all(data, digest_dir=digest_dir, proxy=proxy, max_retries=MAX_RETRIES_DOWNLOAD_FILE)
+        download_results, downloaded_all, remain_num = download_all(data, digest_dir=digest_dir, proxy=proxy, max_retries=MAX_RETRIES_DOWNLOAD_FILE, log=False)
         print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
         if downloaded_all:
             break
