@@ -22,9 +22,9 @@ def _base_api_call(*, url: str, params: dict[str, str], proxy: str | None = None
             raise Exception(f"No availability data found for {url}")
         entries = data[1:]
         headers: list[HEADERS_KEY] = data[0] # type: ignore
-        values: list[dict[str, str]] = []
+        values: list[dict[HEADERS_KEY, str]] = []
         for entry in entries:
-            entry_dict: dict[str, str] = {}
+            entry_dict: dict[HEADERS_KEY, str] = {}
             for i, value in enumerate(entry):
                 entry_dict[headers[i]] = value
             values.append(entry_dict)

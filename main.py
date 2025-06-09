@@ -6,11 +6,12 @@ if __name__ == "__main__":
         print("Usage: python main.py <url> <output_directory> [<proxy>] [<data_directory>]")
         exit(1)
     from pathlib import Path
-    from api import get_availability, download_website, get_files
+    from api import get_availability, get_files, HEADERS_KEY
     from os import listdir
     from digest import cdx_digest
     import requests
     from const import PROXY_TEST_URL
+    from parallel import download_all
     url = argv[1].split("?")[0].rstrip("/")
     proxy = argv[3] if len(argv) > 3 else None
     try:
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     data_dir = Path(argv[4] if len(argv) > 4 else "data")
     pre_file = data_dir / "availability.json"
     if pre_file.exists():
-        data = json.loads(pre_file.read_text())
+        data: list[dict[HEADERS_KEY, str]] = json.loads(pre_file.read_text())
     else:
         data = get_availability(url=url, proxy=proxy)
         pre_file.write_text(json.dumps(data, indent=4))
@@ -34,21 +35,8 @@ if __name__ == "__main__":
     timestamps = set(int(target["timestamp"]) for target in data if target["original"].split("://")[1].split("?")[0].rstrip("/") == url)
     print(f"Found {len(timestamps)} unique timestamps for {url}")
     digest_dir = Path(argv[2]) / "digest"
-    with tqdm(total=cnt, desc="Downloading files", ncols=100) as pbar:
-        for target in data:
-            filename = target["digest"]
-            file = digest_dir / filename
-            file.parent.mkdir(parents=True, exist_ok=True)
-            if file.exists():
-                pbar.update(1)
-                continue
-            download_url = target["original"]
-            tqdm.write(f"Downloading {filename}")
-            file.write_bytes(download_website(url=download_url, timestamp=target["timestamp"], proxy=proxy))
-            pbar.update(1)
-        pbar.clear()
-        pbar.close()
-    print(f"Downloaded {cnt} files for {url} to {argv[2]}/digest")
+    download_results = download_all(data, digest_dir=digest_dir, proxy=proxy)
+    print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
     print("Checking file digests")
     with tqdm(total=cnt, desc="Checking digests", ncols=100) as pbar:
         for filename in listdir(digest_dir):
