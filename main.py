@@ -38,17 +38,13 @@ if __name__ == "__main__":
     download_results = download_all(data, digest_dir=digest_dir, proxy=proxy)
     print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
     print("Checking file digests")
-    with tqdm(total=cnt, desc="Checking digests", ncols=100) as pbar:
-        for filename in listdir(digest_dir):
-            file_path = digest_dir / filename
-            if not (file_path.exists() and file_path.is_file()):
-                raise FileNotFoundError(f"File {file_path} does not exist or is not a file.")
-            sample_digest = cdx_digest(str(file_path))
-            if sample_digest != filename:
-                raise ValueError(f"Digest mismatch for {file_path}: expected {filename}, got {sample_digest}")
-            pbar.update(1)
-        pbar.clear()
-        pbar.close()
+    for filename in listdir(digest_dir):
+        file_path = digest_dir / filename
+        if not (file_path.exists() and file_path.is_file()):
+            raise FileNotFoundError(f"File {file_path} does not exist or is not a file.")
+        sample_digest = cdx_digest(str(file_path))
+        if sample_digest != filename:
+            raise ValueError(f"Digest mismatch for {file_path}: expected {filename}, got {sample_digest}")
     print("All file digests are correct.")
     manifest_dir = Path(argv[2]) / "manifest"
     with tqdm(total=len(timestamps), desc="Generating manifest", ncols=100) as pbar:
@@ -70,7 +66,6 @@ if __name__ == "__main__":
                 manifest_data[k] = v
             manifest_file.write_text(json.dumps(manifest_data, indent=4))
             pbar.update(1)
-        pbar.clear()
         pbar.close()
     print(f"Generated manifest files in {argv[2]}/manifest")
     print("Process completed successfully.")
