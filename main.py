@@ -54,8 +54,8 @@ if __name__ == "__main__":
     with tqdm(total=len(timestamps), desc="Generating manifest", ncols=100) as pbar:
         list_of_timestamps = sorted(timestamps)
         for i, timestamp in enumerate(list_of_timestamps):
-            timestamp_file = data_dir / f"{timestamp}.json"
-            tqdm.write(f"Generating manifest for timestamp {timestamp}")
+            timestamp_file = data_dir / "timestamp" / f"{timestamp}.json"
+            timestamp_file.parent.mkdir(parents=True, exist_ok=True)
             if timestamp_file.exists():
                 files = json.loads(timestamp_file.read_text())
             else:
@@ -63,12 +63,16 @@ if __name__ == "__main__":
                 timestamp_file.write_text(json.dumps(files, indent=4))
             manifest_file = manifest_dir / f"{timestamp}.json"
             manifest_file.parent.mkdir(parents=True, exist_ok=True)
+            if manifest_file.exists():
+                pbar.update(1)
+                continue
             manifest_data = {}
             for file in files:
                 k = file["original"].split(url)[1]
                 v = file["digest"]
                 manifest_data[k] = v
             manifest_file.write_text(json.dumps(manifest_data, indent=4))
+            tqdm.write(f"Generated manifest for timestamp {timestamp}")
             pbar.update(1)
         pbar.close()
     print(f"Generated manifest files in {argv[2]}/manifest")
