@@ -3,17 +3,12 @@ from const import WAYBACK_API_ENDPOINT
 import time
 from tqdm import tqdm
 
-def get_availability(url: str, proxy: str | None = None):
+def _base_api_call(*, url: str, params: dict[str, str], proxy: str | None = None):
     proxies = {
         'http': proxy,
         'https': proxy,
     } if proxy else None
-    params = {
-        "url": f"{url}*",
-        "output": "json",
-        "filter": "statuscode:20*",
-        "collapse": "digest"
-    }
+    params["output"] = "json"
     response = requests.get(WAYBACK_API_ENDPOINT, params=params, proxies=proxies)
     if response.status_code == 200:
         try:
@@ -35,7 +30,15 @@ def get_availability(url: str, proxy: str | None = None):
     else:
         raise Exception(f"Error fetching availability: {response.status_code} - {response.text}")
 
-def download_website(url: str, timestamp: str, proxy: str | None = None):
+def get_availability(*, url: str, proxy: str | None = None):
+    params = {
+        "url": f"{url}*",
+        "filter": "statuscode:20*",
+        "collapse": "digest"
+    }
+    return _base_api_call(url=url, params=params, proxy=proxy)
+
+def download_website(*, url: str, timestamp: str, proxy: str | None = None):
     proxies = {
         'http': proxy,
         'https': proxy,
