@@ -19,8 +19,10 @@ def _download_target(target: dict[HEADERS_KEY, str], digest_dir: Path, max_retri
 def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, max_retries: int, proxy: str | None = None, max_workers: int | None = None):
     if max_workers is None:
         max_workers = DEFAULT_WORKERS
+    num_of_unique_digests = len(set(t["digest"] for t in data))
+    print(f"Found {num_of_unique_digests} unique digests to download")
     to_download = [t for t in data if (not (digest_dir / t["digest"]).exists())]
-    print(f"{len(data) - len(to_download)} files already present, {len(to_download)} to download")
+    print(f"{num_of_unique_digests - len(to_download)} files already present, {len(to_download)} to download")
     pbar = tqdm(total=len(to_download), desc="Downloading files", ncols=100)
     results: list[tuple[dict[HEADERS_KEY, str], bool]] = []
 
