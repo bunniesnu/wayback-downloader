@@ -38,6 +38,17 @@ def get_availability(*, url: str, proxy: str | None = None):
     }
     return _base_api_call(url=url, params=params, proxy=proxy)
 
+def get_files(*, url: str, from_timestamp: str, to_timestamp: str | None = None, proxy: str | None = None):
+    params = {
+        "url": f"{url}*",
+        "filter": "statuscode:20*",
+        "collapse": "digest",
+        "from": from_timestamp
+    }
+    if to_timestamp:
+        params["to"] = to_timestamp
+    return _base_api_call(url=url, params=params, proxy=proxy)
+
 def download_website(*, url: str, timestamp: str, proxy: str | None = None):
     proxies = {
         'http': proxy,

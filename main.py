@@ -24,7 +24,7 @@ if __name__ == "__main__":
     if pre_file.exists():
         data = json.loads(pre_file.read_text())
     else:
-        data = get_availability(url, proxy)
+        data = get_availability(url=url, proxy=proxy)
         pre_file.write_text(json.dumps(data, indent=4))
     cnt = len(data)
     print(f"Found {cnt} entries for {url}")
@@ -40,7 +40,7 @@ if __name__ == "__main__":
                 continue
             download_url = target["original"]
             tqdm.write(f"Downloading {filename}")
-            file.write_bytes(download_website(download_url, target["timestamp"], proxy))
+            file.write_bytes(download_website(url=download_url, timestamp=target["timestamp"], proxy=proxy))
             pbar.update(1)
         pbar.clear()
         pbar.close()
