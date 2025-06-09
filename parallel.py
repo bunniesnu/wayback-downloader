@@ -6,17 +6,17 @@ import os
 
 DEFAULT_WORKERS = min(32, (os.cpu_count() or 1) * 4)
 
-def _download_target(target: dict[HEADERS_KEY, str], digest_dir: Path, proxy: str | None = None):
+def _download_target(target: dict[HEADERS_KEY, str], digest_dir: Path, max_retries: int, proxy: str | None = None):
     filename = target["digest"]
     file = digest_dir / filename
     file.parent.mkdir(parents=True, exist_ok=True)
     if file.exists():
         return target, False
     download_url = target["original"]
-    file.write_bytes(download_website(url=download_url, timestamp=target["timestamp"], proxy=proxy))
+    file.write_bytes(download_website(url=download_url, timestamp=target["timestamp"], proxy=proxy, max_retries=max_retries))
     return target, True
 
-def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, proxy: str | None = None, max_workers: int | None = None):
+def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, max_retries: int, proxy: str | None = None, max_workers: int | None = None):
     if max_workers is None:
         max_workers = DEFAULT_WORKERS
     to_download = [t for t in data if (not (digest_dir / t["digest"]).exists())]
@@ -24,9 +24,11 @@ def download_all(data: list[dict[HEADERS_KEY, str]], digest_dir: Path, proxy: st
     pbar = tqdm(total=len(to_download), desc="Downloading files", ncols=100)
     results: list[tuple[dict[HEADERS_KEY, str], bool]] = []
 
+    tqdm.write(f"Using {max_workers} workers for downloading")
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_map = {
-            executor.submit(_download_target, t, digest_dir, proxy): t
+            executor.submit(_download_target, t, digest_dir, max_retries, proxy): t
             for t in to_download
         }
         for future in as_completed(future_map):

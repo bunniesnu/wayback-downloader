@@ -52,14 +52,14 @@ def get_files(*, url: str, from_timestamp: str, to_timestamp: str | None = None,
         params["to"] = to_timestamp
     return _base_api_call(url=url, params=params, proxy=proxy)
 
-def download_website(*, url: str, timestamp: str, proxy: str | None = None):
+def download_website(*, url: str, timestamp: str, proxy: str | None = None, max_retries: int = 3):
     proxies = {
         'http': proxy,
         'https': proxy,
     } if proxy else None
     full_url = f"https://web.archive.org/web/{timestamp}id_/{url}"
     retry = 0
-    while retry < 3:
+    while retry < max_retries:
         try:
             response = requests.get(full_url, proxies=proxies)
             if response.status_code >= 200 and response.status_code < 210:

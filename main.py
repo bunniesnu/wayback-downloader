@@ -10,7 +10,7 @@ if __name__ == "__main__":
     from os import listdir
     from digest import cdx_digest
     import requests
-    from const import PROXY_TEST_URL
+    from const import PROXY_TEST_URL, MAX_RETRIES_DOWNLOAD_FILE
     from parallel import download_all
     url = argv[1].split("?")[0].rstrip("/")
     proxy = argv[3] if len(argv) > 3 else None
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print(f"Found {len(timestamps)} unique timestamps for {url}")
     digest_dir = Path(argv[2]) / "digest"
     while True:
-        download_results, downloaded_all, remain_num = download_all(data, digest_dir=digest_dir, proxy=proxy)
+        download_results, downloaded_all, remain_num = download_all(data, digest_dir=digest_dir, proxy=proxy, max_retries=MAX_RETRIES_DOWNLOAD_FILE)
         print(f"Downloaded {len(download_results)} files for {url} to {argv[2]}/digest")
         if downloaded_all:
             break
