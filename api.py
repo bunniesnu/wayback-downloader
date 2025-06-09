@@ -7,7 +7,7 @@ def get_availability(url: str, proxy: str | None = None):
     proxies = {
         'http': proxy,
         'https': proxy,
-    }
+    } if proxy else None
     params = {
         "url": f"{url}*",
         "output": "json",
