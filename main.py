@@ -32,19 +32,16 @@ if __name__ == "__main__":
     print(f"Found {len(timestamps)} unique timestamps for {url}")
     with tqdm(total=cnt, desc="Downloading files", ncols=100) as pbar:
         for target in data:
-            index_timestamp = max((ts for ts in timestamps if ts <= int(target["timestamp"])), default=None)
-            if index_timestamp is None:
-                raise Exception(f"No previous timestamp found for {target['timestamp']}")
-            index_timestamp = str(index_timestamp)
-            filename = target["original"].split("?")[0].split(url)[1].lstrip("/")
-            if filename == "":
-                filename = "index.html"
-            file = Path(argv[2]) / index_timestamp / filename
+            filename = target["digest"]
+            file = Path(argv[2]) / "digest" / filename
             file.parent.mkdir(parents=True, exist_ok=True)
             if file.exists():
                 pbar.update(1)
                 continue
-            download_url = (url + "/" + filename) if filename != "index.html" else url
-            tqdm.write(f"Downloading @ {index_timestamp} - {download_url}")
+            download_url = target["original"]
+            tqdm.write(f"Downloading {filename}")
             file.write_bytes(download_website(download_url, target["timestamp"], proxy))
             pbar.update(1)
+        pbar.clear()
+        pbar.close()
+    print(f"Downloaded {cnt} files for {url} to {argv[2]}/digest")
