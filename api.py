@@ -2,6 +2,9 @@ import requests
 from const import WAYBACK_API_ENDPOINT
 import time
 from tqdm import tqdm
+from typing import Literal
+
+HEADERS_KEY = Literal["urlkey", "timestamp", "original", "mimetype", "statuscode", "digest", "length"]
 
 def _base_api_call(*, url: str, params: dict[str, str], proxy: str | None = None):
     proxies = {
@@ -12,13 +15,13 @@ def _base_api_call(*, url: str, params: dict[str, str], proxy: str | None = None
     response = requests.get(WAYBACK_API_ENDPOINT, params=params, proxies=proxies)
     if response.status_code == 200:
         try:
-            data = response.json()
+            data: list[list[str]] = response.json()
         except:
             raise Exception(f"Error parsing JSON response: {response.text}")
         if len(data) < 2:
             raise Exception(f"No availability data found for {url}")
         entries = data[1:]
-        headers = data[0]
+        headers: list[HEADERS_KEY] = data[0] # type: ignore
         values: list[dict[str, str]] = []
         for entry in entries:
             entry_dict: dict[str, str] = {}
