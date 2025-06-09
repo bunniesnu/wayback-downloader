@@ -59,7 +59,7 @@ def download_website(*, url: str, timestamp: str, proxy: str | None = None):
     while retry < 3:
         try:
             response = requests.get(full_url, proxies=proxies)
-            if response.status_code == 200:
+            if response.status_code >= 200 and response.status_code < 210:
                 return response.content
             elif response.status_code == 404:
                 tqdm.write(f"404 Not Found for {url} at {timestamp}")
