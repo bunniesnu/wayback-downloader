@@ -7,6 +7,8 @@ if __name__ == "__main__":
         exit(1)
     from pathlib import Path
     from api import get_availability, download_website
+    from os import listdir
+    from digest import cdx_digest
     import requests
     from const import PROXY_TEST_URL
     url = argv[1].split("?")[0].rstrip("/")
@@ -30,10 +32,11 @@ if __name__ == "__main__":
     print(f"Found {cnt} entries for {url}")
     timestamps = set(int(target["timestamp"]) for target in data if target["original"].split("://")[1].split("?")[0].rstrip("/") == url)
     print(f"Found {len(timestamps)} unique timestamps for {url}")
+    digest_dir = Path(argv[2]) / "digest"
     with tqdm(total=cnt, desc="Downloading files", ncols=100) as pbar:
         for target in data:
             filename = target["digest"]
-            file = Path(argv[2]) / "digest" / filename
+            file = digest_dir / filename
             file.parent.mkdir(parents=True, exist_ok=True)
             if file.exists():
                 pbar.update(1)
@@ -45,3 +48,16 @@ if __name__ == "__main__":
         pbar.clear()
         pbar.close()
     print(f"Downloaded {cnt} files for {url} to {argv[2]}/digest")
+    print("Checking file digests")
+    with tqdm(total=cnt, desc="Checking digests", ncols=100) as pbar:
+        for filename in listdir(digest_dir):
+            file_path = digest_dir / filename
+            if not (file_path.exists() and file_path.is_file()):
+                raise FileNotFoundError(f"File {file_path} does not exist or is not a file.")
+            sample_digest = cdx_digest(str(file_path))
+            if sample_digest != filename:
+                raise ValueError(f"Digest mismatch for {file_path}: expected {filename}, got {sample_digest}")
+            pbar.update(1)
+        pbar.clear()
+        pbar.close()
+    print("All file digests are correct.")
